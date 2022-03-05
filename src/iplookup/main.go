@@ -1,42 +1,48 @@
 package main
 
 import (
+    "context"
+    "errors"
     "fmt"
+    "github.com/aws/aws-lambda-go/events"
+    "github.com/aws/aws-lambda-go/lambda"
     "github.com/vahrennd/ip-lookup/src/iplookup/api"
     "github.com/vahrennd/ip-lookup/src/iplookup/model"
-    "log"
     "net/http"
 )
 
 func main() {
-    http.HandleFunc("/lookup", func(w http.ResponseWriter, r *http.Request) {
-        addresses, ok := r.URL.Query()["address"]
-        if !ok {
-            w.WriteHeader(http.StatusBadRequest)
-            w.Write([]byte("The 'address' parameter is required."))
-            return
-        }
-
-        address := addresses[0]
-
-        Response, err := api.LookupIp(address)
-
-        if err == nil {
-            writeResponse(w, address, Response)
-        } else {
-            w.WriteHeader(http.StatusInternalServerError)
-            fmt.Fprintf(w, "Failed to generate response for %q", address)
-        }
-    })
-
-    log.Println("Listening on localhost:8080")
-
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    lambda.Start(handle)
 }
 
-// writeResponse formats the results of any lookups performed and writes them back to the original requester.
-func writeResponse(w http.ResponseWriter, address string, Response model.LookupResponse) {
-    fmt.Fprintf(w, "Results for %q\n\n", address)
-    fmt.Fprintf(w, "WHOIS:\n\n", address)
-    w.Write([]byte(Response.Whois))
+func handle(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    address := request.QueryStringParameters["address"]
+    if address == "" {
+        return events.APIGatewayProxyResponse{
+            StatusCode: http.StatusOK,
+            Body:       "The address parameter is required.",
+        }, nil
+    }
+
+    Response, err := api.LookupIp(address)
+
+    if err == nil {
+        return events.APIGatewayProxyResponse{
+            StatusCode: http.StatusOK,
+            Body:       formatResponse(address, Response),
+        }, nil
+    } else {
+        // TODO log error?
+        return events.APIGatewayProxyResponse{}, errors.New("failed to generate response")
+    }
+}
+
+// formatResponse formats the results of any lookups performed in a human-readable report
+func formatResponse(address string, Response model.LookupResponse) string {
+    // TODO inefficient, maybe move to LookupResponse?
+    var formattedResponse string
+    formattedResponse += fmt.Sprintf("Results for %q\n\n", address)
+    formattedResponse += fmt.Sprintf("WHOIS:\n\n")
+    formattedResponse += Response.Whois
+    return formattedResponse
 }
