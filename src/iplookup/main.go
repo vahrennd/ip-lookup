@@ -3,11 +3,10 @@ package main
 import (
     "context"
     "errors"
-    "fmt"
     "github.com/aws/aws-lambda-go/events"
     "github.com/aws/aws-lambda-go/lambda"
     "github.com/vahrennd/ip-lookup/src/iplookup/api"
-    "github.com/vahrennd/ip-lookup/src/iplookup/model"
+    "github.com/vahrennd/ip-lookup/src/iplookup/utils"
     "net/http"
 )
 
@@ -29,20 +28,10 @@ func handle(ctx context.Context, request events.APIGatewayProxyRequest) (events.
     if err == nil {
         return events.APIGatewayProxyResponse{
             StatusCode: http.StatusOK,
-            Body:       formatResponse(address, Response),
+            Body:       utils.FormatResponse(address, Response),
         }, nil
     } else {
         // TODO log error?
         return events.APIGatewayProxyResponse{}, errors.New("failed to generate response")
     }
-}
-
-// formatResponse formats the results of any lookups performed in a human-readable report
-func formatResponse(address string, Response model.LookupResponse) string {
-    // TODO inefficient, maybe move to LookupResponse?
-    var formattedResponse string
-    formattedResponse += fmt.Sprintf("Results for %q\n\n", address)
-    formattedResponse += fmt.Sprintf("WHOIS:\n\n")
-    formattedResponse += Response.Whois
-    return formattedResponse
 }
