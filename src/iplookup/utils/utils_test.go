@@ -15,10 +15,21 @@ func TestUtils_testFormatResponse(t *testing.T) {
     // not testing for an exact match (would be too rigid if small parts of the report get reformatted), so we'll
     // just assert that the important parts show up appropriately
     assert.Contains(t, report, "Results for address")
+    assert.Contains(t, report, "WHOIS:")
     assert.Contains(t, report, "definitely.real.whois.data")
+    assert.Contains(t, report, "GeoIP:")
     assert.Contains(t, report, "This address is located in Missouri")
     assert.Contains(t, report, "Full GeoIP data:")
     assert.Contains(t, report, "City=KCMO")
+}
+
+func TestUtils_testFormatResponse_noWhoisData(t *testing.T) {
+    geoIp := model.GeoIp{Status: "success", City: "KCMO", RegionName: "Missouri"}
+    lookupResponse := model.LookupResponse{Whois: "", GeoIp: geoIp}
+
+    report := FormatResponse("address", lookupResponse)
+
+    assert.NotContains(t, report, "WHOIS:")
 }
 
 func TestUtils_testFormatResponse_noGeoIpData(t *testing.T) {

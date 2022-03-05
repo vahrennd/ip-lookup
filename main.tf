@@ -78,7 +78,7 @@ output "url" {
   value = "${aws_api_gateway_deployment.ip_lookup_deploy.invoke_url}${aws_api_gateway_resource.resource.path}"
 }
 
-// Create access control role
+// Create role to allow access to lambda
 resource "aws_iam_role" "iam_for_lambda" {
   name = "ip_lookup_iam"
 

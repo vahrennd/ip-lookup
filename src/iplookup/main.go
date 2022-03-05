@@ -1,7 +1,6 @@
 package main
 
 import (
-    "context"
     "errors"
     "github.com/aws/aws-lambda-go/events"
     "github.com/aws/aws-lambda-go/lambda"
@@ -14,7 +13,11 @@ func main() {
     lambda.Start(handle)
 }
 
-func handle(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    return handleInternal(request, api.LookupApi{})
+}
+
+func handleInternal(request events.APIGatewayProxyRequest, lookupApi api.LookupInterface) (events.APIGatewayProxyResponse, error) {
     address := request.QueryStringParameters["address"]
     if address == "" {
         return events.APIGatewayProxyResponse{
@@ -23,12 +26,12 @@ func handle(ctx context.Context, request events.APIGatewayProxyRequest) (events.
         }, nil
     }
 
-    Response, err := api.LookupIp(address)
+    response, err := lookupApi.LookupDomain(address)
 
     if err == nil {
         return events.APIGatewayProxyResponse{
             StatusCode: http.StatusOK,
-            Body:       utils.FormatResponse(address, Response),
+            Body:       utils.FormatResponse(address, response),
         }, nil
     } else {
         // TODO log error?

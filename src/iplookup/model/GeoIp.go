@@ -2,6 +2,7 @@ package model
 
 import "fmt"
 
+// represents all of the fields sent back when making a request from http://ip-api.com/json/
 type GeoIp struct {
     Status      string
     Country     string

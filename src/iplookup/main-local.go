@@ -8,6 +8,8 @@ import (
     "net/http"
 )
 
+// in case i forget to delete this before calling this done... i was using this file to run this app locally to make it
+// easier to quickly test changes / debug. also because i'm not 100% sure that i'm not going to get a bill from AWS...
 func main() {
     http.HandleFunc("/lookup", func(w http.ResponseWriter, r *http.Request) {
         addresses, ok := r.URL.Query()["address"]
@@ -19,10 +21,10 @@ func main() {
 
         address := addresses[0]
 
-        Response, err := api.LookupIp(address)
+        response, err := api.LookupApi{}.LookupDomain(address)
 
         if err == nil {
-            w.Write([]byte(utils.FormatResponse(address, Response)))
+            w.Write([]byte(utils.FormatResponse(address, response)))
         } else {
             w.WriteHeader(http.StatusInternalServerError)
             fmt.Fprintf(w, "Failed to generate response for %q", address)
