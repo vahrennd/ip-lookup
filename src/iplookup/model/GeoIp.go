@@ -20,6 +20,7 @@ type GeoIp struct {
     Query       string
 }
 
+// String returns a formatted string representation of the data contained in this struct
 func (g GeoIp) String() string {
     return fmt.Sprintf(
         "Country=%s, CountryCode=%s, Region=%s, RegionName=%s, City=%s, Zip=%s, Lat=%f, Lon=%f, Timezone=%s, Isp=%s, Org=%s, As=%s, Query=%s",

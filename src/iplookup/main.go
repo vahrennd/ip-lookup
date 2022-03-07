@@ -34,7 +34,6 @@ func handleInternal(request events.APIGatewayProxyRequest, lookupApi api.LookupI
             Body:       utils.FormatResponse(address, response),
         }, nil
     } else {
-        // TODO log error?
         return events.APIGatewayProxyResponse{}, errors.New("failed to generate response")
     }
 }

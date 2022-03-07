@@ -35,7 +35,8 @@ func TestMain_handleInternal_apiError(t *testing.T) {
 
     _, err := handleInternal(request, LookupMock{})
 
-    assert.Error(t, err, "The address parameter is required.")
+    assert.Error(t, err)
+    assert.Equal(t, "failed to generate response", err.Error())
 }
 
 type LookupMock struct{}
