@@ -47,6 +47,20 @@ func TestApi_testLookupGeoIp_invalidResponse(t *testing.T) {
     assert.NotEqual(t, "success", lookupResponse.GeoIp.Status)
 }
 
+func TestApi_testLookupGeoIp_invalidParameters(t *testing.T) {
+    mockGeoIpServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        fmt.Fprintf(w, "{\"Status\":\"failure\")")
+    }))
+
+    lookupResponse, err := lookupDomainInternal("", MockWhois{}, mockGeoIpServer.URL+"/")
+
+    // mostly just expect the services we're calling to return invalid responses to bad inputs, the report formatter will
+    // handle printing an "invalid results" message
+    assert.NoError(t, err)
+    assert.Equal(t, "whois", lookupResponse.Whois)
+    assert.NotEqual(t, "success", lookupResponse.GeoIp.Status)
+}
+
 type MockWhois struct{}
 
 func (MockWhois) Whois(domain string) (string, error) {
